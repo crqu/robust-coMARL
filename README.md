@@ -172,3 +172,41 @@ results_seeds_0/
 ```
 
 Evaluation results are saved as pickle files with comprehensive performance metrics across different environment configurations.
+
+## One-command benchmark
+
+Create a virtual environment and install the evaluation dependencies:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+From the repository root, evaluate the saved checkpoints without training:
+
+```bash
+python -m benchmark.run --algorithms VDN QMIX VDN_G --seeds 0 1 10
+```
+
+The default uses five episodes for every configuration and seed. It compares
+rho 0.0 and 0.008 for VDN and QMIX, and rho 0.0 and 0.2 for VDN_G. The output
+directory `benchmark_results/` contains `plan.json`, a seed-averaged results
+pickle, and `results.txt` with per-configuration means and standard deviations.
+Training remains available separately through `main.py`.
+
+- `--dry-run` prints and saves the checkpoint and configuration plan without
+  importing the evaluation dependencies or running an environment.
+- `--smoke` also writes a pickle and table using clearly marked synthetic rewards;
+  use `--out /tmp/bench-smoke` to keep these separate from evaluation results.
+- `--held-out-shift` uses configurations outside the existing evaluation set.
+  The evaluator loads one saved network per agent in the held-out env, so a
+  building with more agents than the six-network checkpoints provide fails
+  loudly; total rewards across buildings with different zone counts are not
+  directly comparable.
+- `--configs` selects configuration names; `--episodes`, `--rhos`, `--device`,
+  and `--out` adjust the evaluation and its output location.
+
+To run the new tests, install pytest (`pip install pytest`) and run
+`python -m pytest tests/ -q`. Before this addition, the repository had no
+`tests/` suite or one-command benchmark reproduction.
